@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -78,21 +78,38 @@ const Create_task = () => {
         numberOfLines={4}
         style={{ height: 100, textAlignVertical: 'top' }}
       />
+
+      
       <CustomButton title="Create Task" onPress={async () => {
-        const newTask = {
-          id: Date.now(),
-          task,
-          categories: selectedCategories,
-          date: selectedDate,
-          startTime,
-          endTime,
-          description
-        };
-        const storedTasks = await AsyncStorage.getItem('tasks');
-        const tasks = storedTasks ? JSON.parse(storedTasks) : [];
-        tasks.push(newTask);
-        await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
-        router.push('/');
+          const title = "Task submitted";
+    const message = `Task: ${task}\nCategory: ${selectedCategories.join(', ')}\nDate: ${selectedDate.toDateString()} \nStart Time: ${startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true})}\nEnd Time: ${endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: true})}\nDescription: ${description}`;
+    Alert.alert(title, message, [
+      {text:"cancel", style:"cancel"},
+      {text:"OK",
+        onPress: async () => {
+          const newTask = {
+            id: Date.now(),
+            task,
+            categories: selectedCategories,
+            date: selectedDate,
+            startTime,
+            endTime,
+            description
+          };
+          const storedTasks = await AsyncStorage.getItem('tasks');
+          const tasks = storedTasks ? JSON.parse(storedTasks) : [];
+          tasks.push(newTask);
+          await AsyncStorage.setItem('tasks', JSON.stringify(tasks));
+          setTask('');
+          setSelectedCategories([]);
+          setSelectedDate(new Date());
+          setStartTime(new Date());
+          setEndTime(new Date());
+          setDescription('');
+          router.push('/');
+        },
+      },
+    ]);
       }} />
       <DateTimePickerModal
         isVisible={showDatePicker}
@@ -124,7 +141,23 @@ const Create_task = () => {
     </View>
   )
 }
-
+//  const handleSubmit = () => {
+//   const title = "Task submitted";
+//   const message = 'Task: ${taskName}\nCategory: ${categopry}\nDate: ${date} \nStart Time: ${startTime}\nEnd Time: ${endTime}\nDescription: ${description}';
+//   Alert.alert(title, message, [
+//     {text:"cancel", style:"cancel"},
+//     {text:"OK",
+//       onPress: () => {
+//         setTaskName('');
+//         setCategory('');
+//         setDate('');
+//         setStartTime('');
+//         setEndTime('');
+//         setDescription('');
+//       },
+//     },
+//   ]);
+// }
 export default Create_task
 
 const styles = StyleSheet.create({
